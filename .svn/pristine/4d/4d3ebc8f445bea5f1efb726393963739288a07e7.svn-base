@@ -1,0 +1,20 @@
+package com.app.mapper;
+
+import java.util.List;
+
+import org.apache.ibatis.annotations.Select;
+
+import com.app.entity.CardRecord;
+import com.app.entity.User;
+
+public interface UserMapper {
+
+
+	
+
+	String selectLastTime();
+	
+	
+	int insertNewInfo(List<CardRecord> list);
+	
+}

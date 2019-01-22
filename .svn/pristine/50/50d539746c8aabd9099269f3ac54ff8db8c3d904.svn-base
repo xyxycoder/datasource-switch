@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.app.mapper.UserMapper">
+	
+	<select id="selectLastTime" resultType="String">
+		select  GenTime 'genTime' from  cardRecord  ORDER BY GenTime DESC limit 1
+	</select>
+	
+	<select id="selectSysLastTime" resultType="String">
+		select  Start_date 'startDate' from  sys_alarm  where Create_by ='api' ORDER BY Start_date DESC limit 1
+	</select>
+	
+	<select id="selectSmLastTime" resultType="String">
+		select  Point_date 'pointDate' from  sm_collection_point  where Create_by ='api' ORDER BY Point_date DESC limit 1
+	</select>
+	
+	
+	<insert id="insertNewInfo" parameterType="java.util.List" >
+		INSERT INTO cardrecord (
+		    id,
+			GenTime,
+			SeqID,
+			Type1,
+			TypeName,
+			Param1,
+			StateName,
+			Param2,
+			DevicesName,
+			SitName,
+			CardNumber,
+			AcctName,
+			UserName,
+			OperatorName
+			)
+			VALUES
+			    <foreach collection="list" item="item" index="index" separator=",">
+			 ( (SELECT REPLACE(UUID(),'-','')),
+            #{item.genTime},
+             #{item.seqId},
+             #{item.type1},
+              #{item.typeName},
+               #{item.param1},
+                #{item.stateName},
+                 #{item.param2},
+                  #{item.devicesName},
+                   #{item.sitName},
+                    #{item.cardNumber},
+                     #{item.acctName},
+                      #{item.userName},
+                       #{item.operatorName})
+        </foreach>
+			</insert>
+			
+			
+			
+			
+			<insert id="insertSysInfo" parameterType="java.util.List" >
+		INSERT INTO sys_alarm (
+		    ID,
+			TYPE,
+			CONTENT,
+			LEVEL,
+			START_DATE,
+			CREATE_DATE,
+			CREATE_BY,
+			ACTIVE_FLAG,
+			STATUS
+			)
+			VALUES
+			    <foreach collection="list" item="item" index="index" separator=",">
+			  ( (SELECT REPLACE(UUID(),'-','')),
+            '门禁',
+             #{item.devicesState},
+             '1',
+              #{item.genTime},
+               NOW(),
+                'api',
+                 '1',
+                 '1'
+        </foreach>
+			</insert>
+			
+			
+			<!-- <update id="updateSmInfo" parameterType="java.util.List" >
+					update sm_collection_point set  ASSERT_ID=
+					<foreach collection="list" item="item" index="index" separator=" " open="case POINT_NAME" close="end">
+						when #{item.devicesName} then #{item.seqId}
+					</foreach>
+					where POINT_NAME in  
+                    <foreach collection="list" index="index" item="item" separator="," open="(" close=")">  
+                       #{item.devicesName}  
+                    </foreach>  
+				</update> -->
+				
+				<!-- <update id="updateSmInfo" parameterType="java.util.List" >
+					update sys_alarm set  TYPE_ID=
+					<foreach collection="list" item="item" index="index" separator=" " open="case POINT_NAME" close="end">
+						when #{item.stateName} then #{item.seqId}
+					</foreach>
+					where POINT_NAME in  
+                    <foreach collection="list" index="index" item="item" separator="," open="(" close=")">  
+                       #{item.stateName}  
+                    </foreach>  
+				</update> -->
+				
+	<update id="updateSmInfo" parameterType="java.util.List" >UPDATE sys_alarm sa
+						INNER JOIN sm_collection_point sp
+						SET sa.TYPE_ID = sp.assert_id
+						WHERE
+						substring(
+						sa.content,
+						1,
+						instr(sa.content, ':') - 1
+						) = sp.point_name
+						AND sp.create_by = 'api' and (sa.TYPE_ID is null or sa.TYPE_ID = '')</update>
+			
+			
+			<update id="insertSmInfo" parameterType="java.util.List" >
+					update sm_collection_point set  POINT_DATE=
+					<foreach collection="list" item="item" index="index" separator=" " open="case POINT_NAME" close="end">
+						when #{item.devicesName} then #{item.genTime}
+					</foreach>
+					   ,POINT_VALUE=
+					<foreach collection="list" item="item" index="index" separator=" " open="case POINT_NAME" close="end">
+						when #{item.devicesName} THEN #{item.stateName}
+					</foreach>
+					where POINT_NAME in  
+                    <foreach collection="list" index="index" item="item" separator="," open="(" close=")">  
+                       #{item.devicesName}  
+                    </foreach>  
+				</update>
+			
+			<!-- <insert id="insertSmInfo" parameterType="java.util.List" >
+		replace  INTO sm_collection_point (
+			POINT_CODE,
+		    ID,
+			ORIGIN,
+			POINT_NAME,
+			POINT_VALUE,
+			POINT_DATE,
+			IS_ALARM,
+			ACTIVE_FLAG,
+			CREATE_BY,
+			CREATE_DATE
+			)
+			VALUES
+			    <foreach collection="list" item="item" index="index" separator=",">
+              (#{item.seqId},
+			 (SELECT REPLACE(UUID(),'-','')),
+            '4',
+             #{item.devicesName},
+              #{item.stateName},
+              #{item.genTime},
+              '1',
+               '1',
+                'api',
+                NOW())
+        </foreach>
+			</insert> -->
+		
+	
+</mapper>
+	

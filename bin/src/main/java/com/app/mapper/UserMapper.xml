@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.app.mapper.UserMapper">
+	
+	<select id="selectLastTime" resultType="String">
+		select  GenTime 'genTime' from  cardRecord  ORDER BY GenTime DESC limit 1
+	</select>
+	
+	
+	<insert id="insertNewInfo" parameterType="java.util.List" >
+		INSERT INTO cardrecord (
+			GenTime,
+			SeqID,
+			Type1,
+			TypeName,
+			Param1,
+			StateName,
+			Param2,
+			DevicesName,
+			SitName,
+			CardNumber,
+			AcctName,
+			UserName,
+			OperatorName
+			)
+			VALUES
+			    <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.genTime},
+             #{item.seqId},
+             #{item.type1},
+              #{item.typeName},
+               #{item.param1},
+                #{item.stateName},
+                 #{item.param2},
+                  #{item.devicesName},
+                   #{item.sitName},
+                    #{item.cardNumber},
+                     #{item.acctName},
+                      #{item.userName},
+                       #{item.operatorName})
+        </foreach>
+			</insert>
+	
+</mapper>
+	

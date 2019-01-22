@@ -1,0 +1,70 @@
+package com.app.controller;
+
+import java.util.Date;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
+
+import com.app.entity.CardRecord;
+import com.app.mapper.InfoMapper;
+import com.app.mapper.UserMapper;
+import com.app.servcie.UserService;
+import com.app.util.CustomerContextHolder;
+
+@Component
+public class WebTask {
+	
+	@Autowired
+	private InfoMapper infoMapper;
+	@Autowired
+	private UserMapper userMapper;
+	public static boolean isFlg=false;
+   
+	@Scheduled(cron = "0/30 * * * * ?")
+	public void taskJob(){
+		List<CardRecord> list;
+		//查询上次最后插入数据时间
+//		String i = userService.findUser();
+		String selectSql = userMapper.selectLastTime();
+		System.out.println(selectSql);
+		//切换数据源，获取数据
+		CustomerContextHolder.setCustomerType(CustomerContextHolder.DATA_SOURCE_MSSQL);	
+		if(StringUtils.isEmpty(selectSql)){
+			//第一次，插入所有
+			System.out.println("第一次启动查询数据");
+			list = infoMapper.selectAllInfo();
+		}else{
+			//更具时间查询最新数据插入
+			list = infoMapper.selectInfoByTime(selectSql);
+		}
+		//切换数据源，插入数据
+		CustomerContextHolder.setCustomerType(CustomerContextHolder.DATA_SOURCE_MYSQL);	
+		if(!list.isEmpty()){
+			System.out.println("进入更新");
+		int i = userMapper.insertNewInfo(list);
+		System.out.println("插入了了"+list.size()+"条数据");
+		}else{
+			System.out.println("无数据更新");
+		}
+	}
+	
+//	@Scheduled(cron = "0/30 * * * * ?")
+//	public void sendOrderToDSPT() throws Exception {
+//		if (isFlg) {
+//			return;
+//		}
+//		isFlg = true;
+//		try{
+//			this.taskJob();
+//			isFlg = false;
+//		}catch(Exception e){
+//			System.out.println(e.getMessage().toString());
+//			System.out.println("执行错误");
+//		}finally{
+//		isFlg = false;
+//		}
+//	}
+}
